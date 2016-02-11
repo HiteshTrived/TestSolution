@@ -1,0 +1,79 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Text;
+using System.IO;
+namespace TestJSON
+{
+    /// <summary>
+    /// Summary description for Display1
+    /// </summary>
+    public class Display1 : IHttpHandler
+    {
+        FileStream FS;
+        TextWriter swr;
+        StreamReader sdr;
+        StringBuilder sb = new StringBuilder();
+
+        public void ProcessRequest(HttpContext context)
+        {
+            string cmd = Convert.ToString(context.Request.QueryString["cmd"]);
+            //  if (!string.IsNullOrEmpty(cmd)) {
+            switch (cmd)
+            {
+                case "DS":
+                    string fpath = @"C:\\test1\tst.txt";
+                    //string input;
+                    //using (var reader = new StreamReader(Request.InputStream))
+                    //{
+                    //    input = reader.ReadToEnd();
+                    //}
+
+                    readJSONData(fpath,context);
+                    break;
+                default:
+                    break;
+            }
+            //context.Response.ContentType = "text/plain";
+            //context.Response.Write("Hello World");
+        }
+
+        public void readJSONData(string fpath,HttpContext context)
+        {
+            try
+            {
+                if (File.Exists(fpath))
+                {
+                    FS = new FileStream(fpath, FileMode.Open, FileAccess.Read);
+                    sdr = new StreamReader(FS);
+                    string json = sdr.ReadToEnd().Trim();
+                    if (json.EndsWith(","))
+                    {
+                        json = json.Remove(json.Length - 1);
+                    }
+                    sb.Append("[{");
+                    sb.Append("j:[" + json);
+                    sb.Append("]}]");
+                    Console.WriteLine(sb);
+                    sdr.Close();
+                    FS.Close();
+                    context.Response.ContentType = "text/plain";
+                    context.Response.Write(sb);
+                  
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        public bool IsReusable
+        {
+            get
+            {
+                return false;
+            }
+        }
+    }
+}
